@@ -2,11 +2,10 @@
 using namespace std;
 using namespace boost::program_options;
 
+// Consider using normal function prototype and boost::nowide.
 int wmain(int argc, wchar_t* argv[]) {
     bool do_debug = false, do_cbt = false, do_wndproc = false,
         do_mouse = false, do_keyboard = false;
-
-    std::wcout << L"Hello?" << endl;
 
     options_description desc("Options");
     desc.add_options()
@@ -39,6 +38,7 @@ int wmain(int argc, wchar_t* argv[]) {
 
     if (vm.count("help")) {
         std::cout << desc << endl;
+        exit(0);
     }
 
     auto tids = vm["threads"].as<vector<int>>();

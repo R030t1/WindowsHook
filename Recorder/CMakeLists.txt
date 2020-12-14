@@ -8,12 +8,12 @@ find_package (Boost REQUIRED COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Add source to this project's executable.
-add_executable (Recorder "Recorder.cpp" "Recorder.h")
-target_link_libraries (Recorder Boost::program_options)
+add_executable (recorder "recorder.cpp" "recorder.h")
+target_link_libraries (recorder Boost::program_options)
 
 # TODO: Add tests and install targets if needed.
 install (
-	TARGETS Recorder
+	TARGETS recorder
 	CONFIGURATIONS Debug
 	RUNTIME DESTINATION .
 )

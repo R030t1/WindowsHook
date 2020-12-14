@@ -4,11 +4,11 @@
 cmake_minimum_required (VERSION 3.8)
 
 # Add source to this project's executable.
-add_executable (HookLoader "HookLoader.cpp" "HookLoader.h")
+add_executable (hookloader "hookloader.cpp" "hookloader.h")
 
 # TODO: Add tests and install targets if needed.
 install (
-	TARGETS HookLoader
+	TARGETS hookloader
 	CONFIGURATIONS Debug
 	RUNTIME DESTINATION .
 )
