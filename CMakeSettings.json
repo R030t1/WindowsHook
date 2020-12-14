@@ -10,7 +10,13 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "variables": []
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static",
+          "type": "STRING"
+        }
+      ]
     },
     {
       "name": "x86-Debug",
@@ -22,7 +28,13 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "msvc_x86" ],
-      "variables": []
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x86-windows-static",
+          "type": "STRING"
+        }
+      ]
     }
   ]
 }

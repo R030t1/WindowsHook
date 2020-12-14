@@ -4,6 +4,11 @@
 cmake_minimum_required (VERSION 3.8)
 
 # Add source to this project's executable.
-add_library (HookPayload "HookPayload.cpp" "HookPayload.h")
+add_library (HookPayload SHARED "HookPayload.cpp" "HookPayload.h")
 
 # TODO: Add tests and install targets if needed.
+install (
+	TARGETS HookPayload
+	CONFIGURATIONS Debug
+	RUNTIME DESTINATION .
+)

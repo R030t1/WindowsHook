@@ -7,3 +7,8 @@ cmake_minimum_required (VERSION 3.8)
 add_executable (HookLoader "HookLoader.cpp" "HookLoader.h")
 
 # TODO: Add tests and install targets if needed.
+install (
+	TARGETS HookLoader
+	CONFIGURATIONS Debug
+	RUNTIME DESTINATION .
+)
