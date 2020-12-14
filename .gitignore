@@ -1,0 +1,70 @@
+*.swp
+*.dat
+*.gz
+*.*~
+project.lock.json
+.DS_Store
+*.pyc
+nupkg/
+
+# Protobuf files
+*.pb.h
+*.pb.cc
+
+# CMake files
+CMakeLists.txt.user
+CMakeCache.txt
+CopyOfCMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# CMake Ninja files
+build.ninja
+rules.ninja
+.ninja_deps
+.ninja_log
+
+# Compilation intermediates and results
+*.o
+*.exe
+*.a
+*.so
+*.dll
+
+# Visual Studio Code
+.vscode
+
+# Rider
+.idea
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Visual Studio 2015
+.vs/
