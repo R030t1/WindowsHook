@@ -4,42 +4,43 @@
 #pragma once
 #define _UNICODE
 #define UNICODE
-#include <Windows.h>
 
 #include <iostream>
 
+#include <Windows.h>
+
 extern "C" {
-	BOOL WINAPI DllMain(
+	__declspec(dllexport) BOOL WINAPI DllMain(
 		_In_ HINSTANCE hinstDLL,
 		_In_ DWORD     fdwReason,
 		_In_ LPVOID    lpvReserved
 	);
 
-	LRESULT CALLBACK DebugProc(
+	__declspec(dllexport) LRESULT DebugProc(
 		_In_ int    nCode,
 		_In_ WPARAM wParam,
 		_In_ LPARAM lParam
 	);
 
-	LRESULT CALLBACK CBTProc(
+	__declspec(dllexport) LRESULT CBTProc(
 		_In_ int    nCode,
 		_In_ WPARAM wParam,
 		_In_ LPARAM lParam
 	);
 
-	LRESULT CALLBACK CallWndProc(
+	__declspec(dllexport) LRESULT CallWndProc(
 		_In_ int    nCode,
 		_In_ WPARAM wParam,
 		_In_ LPARAM lParam
 	);
 
-	LRESULT CALLBACK MouseProc(
+	__declspec(dllexport) LRESULT MouseProc(
 		_In_ int    nCode,
 		_In_ WPARAM wParam,
 		_In_ LPARAM lParam
 	);
 
-	LRESULT CALLBACK KeyboardProc(
+	__declspec(dllexport) LRESULT KeyboardProc(
 		_In_ int    nCode,
 		_In_ WPARAM wParam,
 		_In_ LPARAM lParam

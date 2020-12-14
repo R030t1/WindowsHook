@@ -4,7 +4,7 @@
 #include "HookPayload.h"
 using namespace std;
 
-BOOL WINAPI DllMain(
+__declspec(dllexport) BOOL WINAPI DllMain(
 	_In_ HINSTANCE hinstDLL,
 	_In_ DWORD     fdwReason,
 	_In_ LPVOID    lpvReserved
@@ -20,7 +20,7 @@ BOOL WINAPI DllMain(
 	return TRUE;
 }
 
-LRESULT CALLBACK DebugProc(
+LRESULT DebugProc(
 	_In_ int    nCode,
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
@@ -31,7 +31,7 @@ LRESULT CALLBACK DebugProc(
 		return 0;
 }
 
-LRESULT CALLBACK CBTProc(
+LRESULT CBTProc(
 	_In_ int    nCode,
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
@@ -43,7 +43,7 @@ LRESULT CALLBACK CBTProc(
 }
 
 bool IsSetup = false;
-LRESULT CALLBACK CallWndProc(
+LRESULT CallWndProc(
 	_In_ int    nCode,
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
@@ -66,7 +66,7 @@ LRESULT CALLBACK CallWndProc(
 		return 0;
 }
 
-LRESULT CALLBACK MouseProc(
+LRESULT MouseProc(
 	_In_ int    nCode,
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
@@ -77,7 +77,7 @@ LRESULT CALLBACK MouseProc(
 		return 0;
 }
 
-LRESULT CALLBACK KeyboardProc(
+LRESULT KeyboardProc(
 	_In_ int    nCode,
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
