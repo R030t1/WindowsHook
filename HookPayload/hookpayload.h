@@ -5,6 +5,8 @@
 #define _UNICODE
 #define UNICODE
 
+#include "records.pb.h"
+
 #include <iostream>
 
 #include <Windows.h>

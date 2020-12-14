@@ -17,6 +17,9 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		break;
 	}
 
+	A a;
+	a.clear_msg();
+
 	return TRUE;
 }
 

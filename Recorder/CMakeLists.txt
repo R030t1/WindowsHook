@@ -1,19 +1,23 @@
-# CMakeList.txt : CMake project for HookPayload, include source and define
+# CMakeList.txt : CMake project for record, include source and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
 
+set (PROJECT_NAME "recorder")
+
 set (Boost_USE_STATIC_LIBS ON)
 find_package (Boost REQUIRED COMPONENTS program_options)
-include_directories(${Boost_INCLUDE_DIRS})
 
+set (Protobuf_USE_STATIC_LIBS)
 find_package (protobuf REQUIRED)
-include_directories (${Protobuf_INCLUDE_DIRS})
-# TODO: Generate files.
+set_source_files_properties (${PROTO_SRC} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
 
 # Add source to this project's executable.
-add_executable (recorder "recorder.cpp" "recorder.h")
-target_link_libraries (recorder Boost::program_options protobuf::libprotobuf)
+add_executable ("${PROJECT_NAME}" "recorder.cpp" "recorder.h")
+target_link_libraries ("${PROJECT_NAME}" Boost::program_options protobuf::libprotobuf)
+target_include_directories ("${PROJECT_NAME}" PRIVATE {Boost_INCLUDE_DIRS})
+target_include_directories ("${PROJECT_NAME}" PRIVATE {Protobuf_INCLUDE_DIRS})
+target_include_directories ("${PROJECT_NAME}" PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # TODO: Add tests and install targets if needed.
 install (

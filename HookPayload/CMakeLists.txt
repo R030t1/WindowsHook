@@ -9,11 +9,22 @@ else ()
 	set (PROJECT_NAME libhookpayload32)
 endif ()
 
-# Add source to this project's executable.
-add_library ("${PROJECT_NAME}" SHARED "hookpayload.cpp" "hookpayload.h")
+set (Protobuf_USE_STATIC_LIBS)
+find_package (protobuf REQUIRED)
 
-include (GenerateExportHeader)
-generate_export_header ("${PROJECT_NAME}")
+# TODO: Ideally this should be done once, but the generated files are put into the build
+# tree which makes them hard to pull in.
+# TODO: Also need to fix autocomplete.
+protobuf_generate_cpp (PROTO_SRCS PROTO_HDRS records.proto)
+set_source_files_properties (${PROTO_SRC} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
+
+add_library ("${PROJECT_NAME}" SHARED "hookpayload.cpp" "hookpayload.h" ${PROTO_SRCS} ${PROTO_HDRS})
+target_link_libraries ("${PROJECT_NAME}" protobuf::libprotobuf)
+target_include_directories ("${PROJECT_NAME}" PRIVATE ${Protobuf_INCLUDE_DIRS})
+target_include_directories ("${PROJECT_NAME}" PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+#include (GenerateExportHeader)
+#generate_export_header ("${PROJECT_NAME}")
 
 # TODO: Add tests and install targets if needed.
 install (
