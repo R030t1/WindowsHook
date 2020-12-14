@@ -3,6 +3,7 @@
 
 #pragma once
 #define _UNICODE
+#define UNICODE
 #include <Windows.h>
 
 #include <iostream>
