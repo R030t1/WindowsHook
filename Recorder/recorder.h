@@ -1,5 +1,6 @@
 #pragma once
 #define _UNICODE
+#define UNICODE
 
 #include <string>
 #include <vector>
