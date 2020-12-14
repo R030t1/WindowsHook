@@ -1,6 +1,7 @@
 #include "Recorder.h"
 using namespace std;
 using namespace boost::program_options;
+using namespace boost::process;
 
 // Consider using normal function prototype and boost::nowide.
 int wmain(int argc, wchar_t* argv[]) {
@@ -41,16 +42,13 @@ int wmain(int argc, wchar_t* argv[]) {
         exit(0);
     }
 
-    auto tids = vm["threads"].as<vector<int>>();
+    const auto& tids = vm["threads"].as<vector<int>>();
     vector<int> events;
     if (do_debug) events.push_back(WH_DEBUG);
     if (do_cbt) events.push_back(WH_CBT);
     if (do_wndproc) events.push_back(WH_CALLWNDPROC);
     if (do_mouse) events.push_back(WH_MOUSE);
     if (do_keyboard) events.push_back(WH_KEYBOARD);
-
-    for (const auto& t : events)
-        std::cout << t << endl;
 
     if (!events.size()) {
         std::cout << "No events to hook" << endl;
