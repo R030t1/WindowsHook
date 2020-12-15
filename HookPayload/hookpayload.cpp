@@ -40,7 +40,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 				cv.wait(lock);
 
 				CWPSTRUCT cwps;
-				q.pop(cwps);
+				assert(q.pop(cwps));
 
 				lock.unlock();
 			}
