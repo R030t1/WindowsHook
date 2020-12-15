@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 #include <boost/lockfree/queue.hpp>
 
+#include <queue>
 #include <iostream>
 
 #include <Windows.h>

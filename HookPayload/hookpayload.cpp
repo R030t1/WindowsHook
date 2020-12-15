@@ -8,6 +8,7 @@ bool IsSetup = true;
 
 boost::thread relay;
 boost::mutex mx;
+boost::condition_variable cv;
 boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<50>> q;
 
 void connect() {
@@ -26,17 +27,19 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		mx.lock();
 
 		// std::thread fails because of a deadlock. CreateThread and boost::thread
-		// do not have this issue.
+		// do not have this issue. These issues may be fixed on GCC and clang.
 		boost::thread([] {
 			IsSetup = false;
 			mx.unlock();
 		});
 
-		// Amusing, but do something else
 		relay = boost::thread([] {
-			while (q.consume_one([] (const CWPSTRUCT cwps) {
+			while (true) {
+				boost::unique_lock<boost::mutex> lock(mx);
+				cv.wait(lock);
 
-			}));
+				lock.unlock();
+			}
 		});
 		
 		break;
@@ -44,6 +47,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 	case DLL_PROCESS_DETACH:
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
+		relay.interrupt();
 		break;
 	}
 
@@ -89,7 +93,12 @@ LRESULT CallWndProc(
 		IsSetup = true;
 	}
 
-	q.push(CWPSTRUCT{*(CWPSTRUCT *)lParam});
+	boost::unique_lock<boost::mutex> lock(mx);
+	
+	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
+
+	lock.unlock();
+	cv.notify_one();
 
 	if (nCode < 0)
 		return CallNextHookEx(NULL, nCode, wParam, lParam);
