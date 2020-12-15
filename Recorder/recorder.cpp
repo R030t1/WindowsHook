@@ -2,6 +2,8 @@
 using namespace std;
 using namespace boost::program_options;
 using namespace boost::process;
+using namespace boost::asio;
+using boost::asio::ip::tcp;
 
 // Consider using normal function prototype and boost::nowide.
 int wmain(int argc, wchar_t* argv[]) {
@@ -60,5 +62,50 @@ int wmain(int argc, wchar_t* argv[]) {
         exit(-1);
     }
 
+    boost::asio::io_context ctx;
+    tcp::acceptor acc(ctx, tcp::endpoint(tcp::v4(), 9032), true);
+
+    ctx.run();
+
     return 0;
 }
+
+class tcp_connection : public boost::enable_shared_from_this<tcp_connection> {
+public:
+    static boost::shared_ptr<tcp_connection> create(boost::asio::io_context& ctx) {
+        return boost::shared_ptr<tcp_connection>(new tcp_connection(ctx));
+    }
+
+    void start_receiving() {
+
+    }
+
+    tcp::socket sock;
+private:
+    tcp_connection(boost::asio::io_context& ctx) : sock(ctx) {
+
+    }
+};
+
+class record_server {
+public:
+    record_server(boost::asio::io_context& io_context)
+        : ctx(io_context), acc(io_context, tcp::v4()) {
+        acc.bind(tcp::endpoint(ip::address::from_string("127.0.0.1"), 9032));
+        acc.bind(tcp::endpoint(ip::address::from_string("127.0.0.1"), 9064));
+    }
+
+    void start_accepting() {
+        boost::shared_ptr<tcp_connection> new_conn = tcp_connection::create(ctx);
+
+        acc.async_accept(new_conn->sock,
+            [this, new_conn](boost::system::error_code const& ec) {
+                new_conn->start_receiving();
+                start_accepting();
+            });
+    }
+
+private:
+    boost::asio::io_context& ctx;
+    tcp::acceptor acc;
+};
