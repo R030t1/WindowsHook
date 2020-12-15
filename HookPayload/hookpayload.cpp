@@ -32,6 +32,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 			IsSetup = false;
 			mx.unlock();
 		});
+		// Destructor terminates thread, perhaps ensure static storage for thread.
 
 		relay = boost::thread([] {
 			while (true) {
@@ -45,8 +46,12 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		break;
 	}
 	case DLL_PROCESS_DETACH:
+		break;
 	case DLL_THREAD_ATTACH:
+		break;
 	case DLL_THREAD_DETACH:
+		// Uncaught exception terminates thread due to interruptible call to
+		// condition_variable.wait.
 		relay.interrupt();
 		break;
 	}
