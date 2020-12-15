@@ -28,6 +28,11 @@ int wmain(int argc, wchar_t* argv[]) {
         ("keyboard,k", bool_switch(&do_keyboard),
             "Application level keyboard events");
 
+    A a;
+    a.clear_msg();
+    a.set_msg("Hello, world!");
+    cout << a.msg() << endl;
+
     // Drops argv[0] if there is more than one argument, also
     // does not do globbing.
     //int argc;

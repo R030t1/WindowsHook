@@ -12,7 +12,7 @@ set (CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 project ("WindowsHook")
 
 # Include sub-projects.
-#add_subdirectory ("HookProtocol")
+add_subdirectory ("HookProtocol")
 add_subdirectory ("HookPayload")
 add_subdirectory ("HookLoader")
 add_subdirectory ("Recorder")

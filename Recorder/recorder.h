@@ -2,6 +2,8 @@
 #define _UNICODE
 #define UNICODE
 
+#include "records.pb.h"
+
 #include <string>
 #include <vector>
 #include <iostream>
