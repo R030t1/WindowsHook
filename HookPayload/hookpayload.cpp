@@ -39,6 +39,9 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 				boost::unique_lock<boost::mutex> lock(mx);
 				cv.wait(lock);
 
+				CWPSTRUCT cwps;
+				q.pop(cwps);
+
 				lock.unlock();
 			}
 		});
