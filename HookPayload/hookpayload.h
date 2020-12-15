@@ -7,6 +7,9 @@
 
 #include "records.pb.h"
 
+#include <boost/thread.hpp>
+#include <boost/lockfree/queue.hpp>
+
 #include <iostream>
 
 #include <Windows.h>

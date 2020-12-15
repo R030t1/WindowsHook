@@ -4,21 +4,48 @@
 #include "HookPayload.h"
 using namespace std;
 
+bool IsSetup = true;
+
+boost::thread relay;
+boost::mutex mx;
+boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<50>> q;
+
+void connect() {
+
+}
+
 __declspec(dllexport) BOOL WINAPI DllMain(
 	_In_ HINSTANCE hinstDLL,
 	_In_ DWORD     fdwReason,
 	_In_ LPVOID    lpvReserved
 ) {
 	switch (fdwReason) {
-	case DLL_PROCESS_ATTACH:
+	case DLL_PROCESS_ATTACH: {
+		// std::mutex fails because of a deadlock. CreateMutexEx[W] and boost::mutex
+		// do not have this issue.
+		mx.lock();
+
+		// std::thread fails because of a deadlock. CreateThread and boost::thread
+		// do not have this issue.
+		boost::thread([] {
+			IsSetup = false;
+			mx.unlock();
+		});
+
+		// Amusing, but do something else
+		relay = boost::thread([] {
+			while (q.consume_one([] (const CWPSTRUCT cwps) {
+
+			}));
+		});
+		
+		break;
+	}
 	case DLL_PROCESS_DETACH:
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 		break;
 	}
-
-	A a;
-	a.clear_msg();
 
 	return TRUE;
 }
@@ -45,7 +72,6 @@ LRESULT CBTProc(
 		return 0;
 }
 
-bool IsSetup = false;
 LRESULT CallWndProc(
 	_In_ int    nCode,
 	_In_ WPARAM wParam,
@@ -62,6 +88,8 @@ LRESULT CallWndProc(
 		CloseHandle(file);
 		IsSetup = true;
 	}
+
+	q.push(CWPSTRUCT{*(CWPSTRUCT *)lParam});
 
 	if (nCode < 0)
 		return CallNextHookEx(NULL, nCode, wParam, lParam);

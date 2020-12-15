@@ -9,12 +9,15 @@ else ()
 	set (PROJECT_NAME libhookpayload32)
 endif ()
 
+set (Boost_USE_STATIC_LIBS ON)
+find_package (Boost REQUIRED COMPONENTS thread)
+
 set (Protobuf_USE_STATIC_LIBS)
 find_package (protobuf REQUIRED)
 
 add_library ("${PROJECT_NAME}" SHARED "hookpayload.cpp" "hookpayload.h")
 
-target_link_libraries ("${PROJECT_NAME}" protobuf::libprotobuf)
+target_link_libraries ("${PROJECT_NAME}" Boost::thread protobuf::libprotobuf)
 target_link_libraries ("${PROJECT_NAME}" ${HookProtocol_LIBRARIES})
 
 target_include_directories ("${PROJECT_NAME}" PRIVATE ${Protobuf_INCLUDE_DIRS})
