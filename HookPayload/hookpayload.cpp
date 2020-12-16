@@ -103,6 +103,7 @@ LRESULT CallWndProc(
 
 	boost::unique_lock<boost::mutex> lock(mx);
 	
+	// TODO: Should be able to call async send from here.
 	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
 
 	lock.unlock();
