@@ -3,16 +3,33 @@
 
 #include "HookPayload.h"
 using namespace std;
+using namespace boost::asio;
 
-bool IsSetup = true;
+using boost::asio::ip::tcp;
+using boost::asio::awaitable;
+using boost::asio::co_spawn;
+using boost::asio::detached;
+using boost::asio::use_awaitable;
+namespace this_coro = boost::asio::this_coro;
+
+bool is_setup = false;
 
 boost::thread relay;
-boost::mutex mx;
 boost::condition_variable cv;
 boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<50>> q;
 
-void connect() {
+boost::thread runner;
+boost::mutex mx;
 
+boost::asio::io_context ctx;
+tcp::socket serv(ctx);
+
+awaitable<void> async_connect_to_recorder() {
+	co_await serv.async_connect({ ip::address::from_string("::1"), 9090 }, use_awaitable);
+	//mx.unlock(); // Could remove with better use of co_await?
+	// No, just spawn after connected. It's not appropriate to hold up the hook processing
+	// until we connect.
+	co_return;
 }
 
 __declspec(dllexport) BOOL WINAPI DllMain(
@@ -24,15 +41,16 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 	case DLL_PROCESS_ATTACH: {
 		// std::mutex fails because of a deadlock. CreateMutexEx[W] and boost::mutex
 		// do not have this issue.
-		mx.lock();
+		//mx.lock();
 
 		// std::thread fails because of a deadlock. CreateThread and boost::thread
 		// do not have this issue. These issues may be fixed on GCC and clang.
-		boost::thread([] {
-			IsSetup = false;
-			mx.unlock();
-		});
 		// Destructor terminates thread, perhaps ensure static storage for thread.
+
+		runner = boost::thread([]() {
+			co_spawn(ctx, async_connect_to_recorder, detached);
+			ctx.run();
+		});
 
 		relay = boost::thread([] {
 			while (true) {
@@ -89,7 +107,7 @@ LRESULT CallWndProc(
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
 ) {
-	if (!IsSetup) {
+	if (!is_setup) {
 		int pid = GetCurrentProcessId();
 		wchar_t fname[256];
 		wsprintfW(fname, L"C:\\tmp\\%d", pid);
@@ -98,13 +116,18 @@ LRESULT CallWndProc(
 			CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL
 		);
 		CloseHandle(file);
-		IsSetup = true;
+		is_setup = true;
 	}
 
 	boost::unique_lock<boost::mutex> lock(mx);
 	
 	// TODO: Should be able to call async send from here.
 	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
+	std::vector<CWPSTRUCT> ev{ *(CWPSTRUCT*)lParam };
+	//char b[256];
+	if (serv.is_open())
+		serv.async_send(buffer(ev), [](auto, auto) {});
+	//serv.async_send(buffer(ev), [](auto, auto) {});
 
 	lock.unlock();
 	cv.notify_one();

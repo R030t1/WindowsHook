@@ -20,6 +20,7 @@ public:
     void async_receive() {
         cout << "receive start" << endl;
 
+        // Fails because object gets collected.
         char b[1024];
         sock.async_read_some(buffer(b), [this](boost::system::error_code const& ec, size_t bytes) {
             cout << "receive end: " << ec.message() << endl;
@@ -73,8 +74,8 @@ awaitable<void> async_record(tcp::socket sock) {
 }
 
 awaitable<void> async_listen() {
-    auto exec = co_await this_coro::executor;
-    tcp::acceptor acc(exec, { tcp::v4(), 9032 });
+    const auto& exec = co_await this_coro::executor;
+    tcp::acceptor acc{ exec, { ip::address::from_string("::1"), 9090 } };
 
     for (;;) {
         tcp::socket sock = co_await acc.async_accept(use_awaitable);
@@ -143,16 +144,8 @@ int wmain(int argc, wchar_t* argv[]) {
     sigs.async_wait([&](auto, auto) {
         ctx.stop();
     });
-
-    //tcp::acceptor acc(ctx, tcp::endpoint(tcp::v4(), 9032), true);
-    //record_server rs(ctx);
-    //rs.async_accept();
-
     co_spawn(ctx, async_listen, detached);
-
     ctx.run();
-
-    cout << "done?" << endl;
 
     return 0;
 }
