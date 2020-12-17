@@ -16,7 +16,9 @@ bool is_setup = false;
 
 boost::thread relay;
 boost::condition_variable cv;
-boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<50>> q;
+
+// Use standard to avoid perf issues?
+boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<256>> q;
 
 boost::thread runner;
 boost::mutex mx;
@@ -55,6 +57,19 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		// std::thread fails because of a deadlock. CreateThread and boost::thread
 		// do not have this issue. These issues may be fixed on GCC and clang.
 		// Destructor terminates thread, perhaps ensure static storage for thread.
+
+		runner = boost::thread([]() {
+			serv.connect({ ip::address::from_string("::1"), 9090 });
+			while (true) {
+				boost::unique_lock<boost::mutex> lock(mx);
+				cv.wait(lock);
+
+				CWPSTRUCT cwps;
+				while (q.pop(cwps))
+					serv.send(buffer(&cwps, sizeof CWPSTRUCT));
+				lock.unlock();
+			}
+		});
 
 		/*runner = boost::thread([]() {
 			co_spawn(ctx, async_connect_to_recorder, detached);
@@ -133,10 +148,17 @@ LRESULT CallWndProc(
 		is_setup = true;
 	}
 
-	/*boost::unique_lock<boost::mutex> lock(mx);
-	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
+	boost::unique_lock<boost::mutex> lock(mx);
+	CWPSTRUCT* cwps = (CWPSTRUCT*)lParam;
+	// Still getting crashes
+	q.push(CWPSTRUCT{
+		.lParam = cwps->lParam,
+		.wParam = cwps->wParam,
+		.message = cwps->message,
+		.hwnd = cwps->hwnd,
+	});
 	lock.unlock();
-	cv.notify_one();*/
+	cv.notify_one();
 	
 	// TODO: Should be able to call async send from here.
 	//std::vector<CWPSTRUCT> ev{ *(CWPSTRUCT*)lParam };
