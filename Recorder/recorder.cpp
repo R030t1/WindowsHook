@@ -5,13 +5,13 @@ using namespace boost::process;
 using namespace boost::asio;
 
 using boost::asio::ip::tcp;
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
+//using boost::asio::awaitable;
+//using boost::asio::co_spawn;
 using boost::asio::detached;
-using boost::asio::use_awaitable;
+//using boost::asio::use_awaitable;
 namespace this_coro = boost::asio::this_coro;
 
-awaitable<void> async_record(tcp::socket sock) {
+/*awaitable<void> async_record(tcp::socket sock) {
     cout << "async_record" << endl;
 
     for (;;) {
@@ -35,7 +35,7 @@ awaitable<void> async_listen() {
     }
 
     co_return;
-}
+}*/
 
 // Consider using normal function prototype and boost::nowide.
 int wmain(int argc, wchar_t* argv[]) {
@@ -94,7 +94,7 @@ int wmain(int argc, wchar_t* argv[]) {
     sigs.async_wait([&](auto, auto) {
         ctx.stop();
     });
-    co_spawn(ctx, async_listen, detached);
+    //co_spawn(ctx, async_listen, detached);
     ctx.run();
 
     return 0;

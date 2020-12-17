@@ -6,10 +6,10 @@ using namespace std;
 using namespace boost::asio;
 
 using boost::asio::ip::tcp;
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
+//using boost::asio::awaitable;
+//using boost::asio::co_spawn;
 using boost::asio::detached;
-using boost::asio::use_awaitable;
+//using boost::asio::use_awaitable;
 namespace this_coro = boost::asio::this_coro;
 
 bool is_setup = false;
@@ -21,28 +21,12 @@ boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<50>> q;
 boost::thread runner;
 boost::mutex mx;
 
-/*class event {
-public:
-	explicit event(boost::asio::io_context& ctx) : tmr(ctx) {
-		tmr.expires_at(boost::posix_time::pos_infin);
-	}
-
-	template <typename WaitHandler>
-	void async_wait(WaitHandler handler) {
-		tmr.async_wait(boost::bind(handler));
-	}
-
-	void notify_one() { tmr.cancel_one(); }
-	//void notify_all() { tmr.cancel_all(); }
-
-private:
-	boost::asio::deadline_timer tmr;
-};*/
+// TODO: /await is legacy coroutine support, move to standard.
 
 boost::asio::io_context ctx;
 tcp::socket serv(ctx);
 
-awaitable<void> async_connect_to_recorder() {
+/*awaitable<void> async_connect_to_recorder() {
 	co_await serv.async_connect({ ip::address::from_string("::1"), 9090 }, use_awaitable);
 	//mx.unlock(); // Could remove with better use of co_await?
 	// No, just spawn after connected. It's not appropriate to hold up the hook processing
@@ -52,10 +36,10 @@ awaitable<void> async_connect_to_recorder() {
 
 awaitable<void> async_send_to_recorder() {
 	while (true) {
+		co_await ev;
 	}
-	//co_await ev.async_wait(use_awaitable);
 	co_return;
-}
+}*/
 
 __declspec(dllexport) BOOL WINAPI DllMain(
 	_In_ HINSTANCE hinstDLL,
@@ -72,13 +56,13 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		// do not have this issue. These issues may be fixed on GCC and clang.
 		// Destructor terminates thread, perhaps ensure static storage for thread.
 
-		runner = boost::thread([]() {
+		/*runner = boost::thread([]() {
 			co_spawn(ctx, async_connect_to_recorder, detached);
-			//co_spawn(ctx, async_send_to_recorder, detached); // TODO: awaitable condition variable.
+			co_spawn(ctx, async_send_to_recorder, detached); // TODO: awaitable condition variable.
 			ctx.run();
-		});
+		});*/
 
-		relay = boost::thread([] {
+		/*relay = boost::thread([] {
 			while (true) {
 				boost::unique_lock<boost::mutex> lock(mx);
 				cv.wait(lock);
@@ -91,7 +75,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 
 				lock.unlock();
 			}
-		});
+		});*/
 		
 		break;
 	}
@@ -149,10 +133,10 @@ LRESULT CallWndProc(
 		is_setup = true;
 	}
 
-	boost::unique_lock<boost::mutex> lock(mx);
+	/*boost::unique_lock<boost::mutex> lock(mx);
 	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
 	lock.unlock();
-	cv.notify_one();
+	cv.notify_one();*/
 	
 	// TODO: Should be able to call async send from here.
 	//std::vector<CWPSTRUCT> ev{ *(CWPSTRUCT*)lParam };

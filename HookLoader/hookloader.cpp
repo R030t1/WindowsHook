@@ -36,6 +36,10 @@ int set_hooks(HWND hWnd) {
 	return 0;
 }
 
+int unset_hooks(HWND hWnd) {
+	return UnhookWindowsHookEx(HookWndProc);
+}
+
 int APIENTRY wWinMain(
 	_In_     HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -97,6 +101,7 @@ LRESULT CALLBACK WndProc(
 		set_hooks(hWnd);
 		break;
 	case WM_DESTROY:
+		unset_hooks(hWnd);
 		PostQuitMessage(0);
 		break;
 	}

@@ -15,7 +15,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/co_spawn.hpp>
+//#include <boost/asio/awaitable.hpp>
+//#include <boost/asio/co_spawn.hpp>
 
 #include <Windows.h>
