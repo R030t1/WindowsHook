@@ -21,6 +21,24 @@ boost::lockfree::queue<CWPSTRUCT, boost::lockfree::capacity<50>> q;
 boost::thread runner;
 boost::mutex mx;
 
+/*class event {
+public:
+	explicit event(boost::asio::io_context& ctx) : tmr(ctx) {
+		tmr.expires_at(boost::posix_time::pos_infin);
+	}
+
+	template <typename WaitHandler>
+	void async_wait(WaitHandler handler) {
+		tmr.async_wait(boost::bind(handler));
+	}
+
+	void notify_one() { tmr.cancel_one(); }
+	//void notify_all() { tmr.cancel_all(); }
+
+private:
+	boost::asio::deadline_timer tmr;
+};*/
+
 boost::asio::io_context ctx;
 tcp::socket serv(ctx);
 
@@ -29,6 +47,13 @@ awaitable<void> async_connect_to_recorder() {
 	//mx.unlock(); // Could remove with better use of co_await?
 	// No, just spawn after connected. It's not appropriate to hold up the hook processing
 	// until we connect.
+	co_return;
+}
+
+awaitable<void> async_send_to_recorder() {
+	while (true) {
+	}
+	//co_await ev.async_wait(use_awaitable);
 	co_return;
 }
 
@@ -49,10 +74,11 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 
 		runner = boost::thread([]() {
 			co_spawn(ctx, async_connect_to_recorder, detached);
+			//co_spawn(ctx, async_send_to_recorder, detached); // TODO: awaitable condition variable.
 			ctx.run();
 		});
 
-		/*relay = boost::thread([] {
+		relay = boost::thread([] {
 			while (true) {
 				boost::unique_lock<boost::mutex> lock(mx);
 				cv.wait(lock);
@@ -60,9 +86,12 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 				CWPSTRUCT cwps;
 				assert(q.pop(cwps));
 
+				std::vector<CWPSTRUCT> ev{ cwps };
+				serv.async_send(buffer(ev), [](auto, auto) {});
+
 				lock.unlock();
 			}
-		});*/
+		});
 		
 		break;
 	}
@@ -73,6 +102,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 	case DLL_THREAD_DETACH:
 		// Uncaught exception terminates thread due to interruptible call to
 		// condition_variable.wait.
+		ctx.stop();
 		relay.interrupt();
 		break;
 	}
@@ -119,18 +149,17 @@ LRESULT CallWndProc(
 		is_setup = true;
 	}
 
-	//boost::unique_lock<boost::mutex> lock(mx);
+	boost::unique_lock<boost::mutex> lock(mx);
+	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
+	lock.unlock();
+	cv.notify_one();
 	
 	// TODO: Should be able to call async send from here.
-	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
-	std::vector<CWPSTRUCT> ev{ *(CWPSTRUCT*)lParam };
+	//std::vector<CWPSTRUCT> ev{ *(CWPSTRUCT*)lParam };
 	//char b[256];
-	if (serv.is_open())
-		serv.async_send(buffer(ev), [](auto, auto) {});
+	//if (serv.is_open())
+	//	serv.async_send(buffer(ev), [](auto, auto) {});
 	//serv.async_send(buffer(ev), [](auto, auto) {});
-
-	//lock.unlock();
-	//cv.notify_one();
 
 	if (nCode < 0)
 		return CallNextHookEx(NULL, nCode, wParam, lParam);
