@@ -11,56 +11,6 @@ using boost::asio::detached;
 using boost::asio::use_awaitable;
 namespace this_coro = boost::asio::this_coro;
 
-class tcp_connection : public boost::enable_shared_from_this<tcp_connection> {
-public:
-    static boost::shared_ptr<tcp_connection> create(boost::asio::io_context& ctx) {
-        return boost::shared_ptr<tcp_connection>(new tcp_connection(ctx));
-    }
-
-    void async_receive() {
-        cout << "receive start" << endl;
-
-        // Fails because object gets collected.
-        char b[1024];
-        sock.async_read_some(buffer(b), [this](boost::system::error_code const& ec, size_t bytes) {
-            cout << "receive end: " << ec.message() << endl;
-            cout << "sock open: " << sock.is_open() << endl;
-            
-            if (sock.is_open())
-                async_receive();
-        });
-    }
-
-    tcp::socket sock;
-private:
-    tcp_connection(boost::asio::io_context& ctx) : sock(ctx) {
-        
-    }
-};
-
-class record_server {
-public:
-    record_server(boost::asio::io_context& io_context)
-        : ctx(io_context), acc(io_context, { tcp::v4(), 9032 }) {
-        //acc.bind(tcp::endpoint(ip::address::from_string("127.0.0.1"), 9032));
-        //acc.bind(tcp::endpoint(ip::address::from_string("127.0.0.1"), 9064));
-    }
-
-    void async_accept() {
-        boost::shared_ptr<tcp_connection> new_conn = tcp_connection::create(ctx);
-
-        acc.async_accept(new_conn->sock,
-            [this, new_conn](boost::system::error_code const& ec) {
-                new_conn->async_receive();
-                async_accept();
-            });
-    }
-
-private:
-    boost::asio::io_context& ctx;
-    tcp::acceptor acc;
-};
-
 awaitable<void> async_record(tcp::socket sock) {
     cout << "async_record" << endl;
 

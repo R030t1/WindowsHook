@@ -52,7 +52,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 			ctx.run();
 		});
 
-		relay = boost::thread([] {
+		/*relay = boost::thread([] {
 			while (true) {
 				boost::unique_lock<boost::mutex> lock(mx);
 				cv.wait(lock);
@@ -62,7 +62,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 
 				lock.unlock();
 			}
-		});
+		});*/
 		
 		break;
 	}
@@ -119,7 +119,7 @@ LRESULT CallWndProc(
 		is_setup = true;
 	}
 
-	boost::unique_lock<boost::mutex> lock(mx);
+	//boost::unique_lock<boost::mutex> lock(mx);
 	
 	// TODO: Should be able to call async send from here.
 	q.push(CWPSTRUCT{ *(CWPSTRUCT*)lParam });
@@ -129,8 +129,8 @@ LRESULT CallWndProc(
 		serv.async_send(buffer(ev), [](auto, auto) {});
 	//serv.async_send(buffer(ev), [](auto, auto) {});
 
-	lock.unlock();
-	cv.notify_one();
+	//lock.unlock();
+	//cv.notify_one();
 
 	if (nCode < 0)
 		return CallNextHookEx(NULL, nCode, wParam, lParam);
