@@ -66,7 +66,8 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 
 				CWPSTRUCT cwps;
 				while (q.pop(cwps))
-					serv.send(buffer(&cwps, sizeof CWPSTRUCT));
+					if (serv.is_open()) // This doesn't fix it.
+						serv.send(buffer(&cwps, sizeof CWPSTRUCT));
 				lock.unlock();
 			}
 		});
