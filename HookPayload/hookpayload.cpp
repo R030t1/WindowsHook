@@ -59,16 +59,30 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		// Destructor terminates thread, perhaps ensure static storage for thread.
 
 		runner = boost::thread([]() {
-			serv.connect({ ip::address::from_string("::1"), 9090 });
-			while (true) {
-				boost::unique_lock<boost::mutex> lock(mx);
-				cv.wait(lock);
+			is_setup = false;
+			//serv.close();
+			//serv.release();
 
-				CWPSTRUCT cwps;
-				while (q.pop(cwps))
-					if (serv.is_open()) // This doesn't fix it.
-						serv.send(buffer(&cwps, sizeof CWPSTRUCT));
-				lock.unlock();
+			// The crash (in Discord, may be different for Steam) is related to
+			// sending when not connected.
+			try {
+				serv.connect({ ip::address::from_string("::1"), 9090 });
+				while (true) {
+					boost::unique_lock<boost::mutex> lock(mx);
+					cv.wait(lock);
+
+					CWPSTRUCT cwps;
+					while (q.pop(cwps))
+						if (serv.is_open())
+							serv.send(buffer(&cwps, sizeof CWPSTRUCT));
+						// But this does not fix the crash.
+						else return;
+					lock.unlock();
+				}
+			}
+			catch (boost::system::error_code& ec) {
+				cout << "Socket error" << endl;
+				MessageBoxA(NULL, "ec", (LPCSTR)ec.message().c_str(), MB_ICONERROR);
 			}
 		});
 
@@ -152,12 +166,12 @@ LRESULT CallWndProc(
 	boost::unique_lock<boost::mutex> lock(mx);
 	CWPSTRUCT* cwps = (CWPSTRUCT*)lParam;
 	// Still getting crashes
-	q.push(CWPSTRUCT{
+	/*q.push(CWPSTRUCT{
 		.lParam = cwps->lParam,
 		.wParam = cwps->wParam,
 		.message = cwps->message,
 		.hwnd = cwps->hwnd,
-	});
+	});*/
 	lock.unlock();
 	cv.notify_one();
 	

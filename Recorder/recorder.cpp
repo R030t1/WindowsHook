@@ -26,6 +26,7 @@ awaitable<void> async_record(tcp::socket sock) {
 awaitable<void> async_listen() {
     const auto& exec = co_await this_coro::executor;
     tcp::acceptor acc{ exec, { ip::address::from_string("::1"), 9090 } };
+    acc.set_option(socket_base::reuse_address(true));
 
     for (;;) {
         tcp::socket sock = co_await acc.async_accept(use_awaitable);
